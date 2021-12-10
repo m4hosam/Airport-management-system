@@ -11,17 +11,18 @@ struct Landing
     struct Landing *previous;
 };
 
-struct Landing **newNode(int priority, int id, int req_time, int delay)
+struct Landing *newNode(int priority, int id, int req_time, int delay)
 {
-    struct Landing **node = (struct Landing *)malloc(sizeof(struct Landing *));
-    (*node)->id = id;
-    (*node)->priority = priority;
-    (*node)->req_time = req_time;
-    (*node)->delayed = delay;
-    (*node)->next = NULL;
-    (*node)->previous = NULL;
+    printf("cool") ;
+    struct Landing *node = (struct Landing *)malloc(sizeof(struct Landing));
+    (node)->id = id;
+    (node)->priority = priority;
+    (node)->req_time = req_time;
+    (node)->delayed = delay;
+    (node)->next = NULL;
+    (node)->previous = NULL;
     printf("77\n");
-    return (*node);
+    return (node);
 }
 
 int peek(struct Landing **node)
@@ -45,9 +46,9 @@ int isEmpty(struct Landing **node)
 void push(struct Landing **head, int p, int d, int t, int delay)
 {
     struct Landing *start = (*head);
-    printf("node\n");
+    printf("nodeh\n");
     // Create new Node
-    struct Landing **new_node = newNode(p, d, t, delay);
+    struct Landing *new_node = newNode(p, d, t, delay);
     printf("888\n");
 
     // the inserting time is less than the head number
@@ -123,18 +124,19 @@ int main()
 {
     printf("111\n");
 
-    struct Landing **pq = newNode(1, 1, 14, 0);
+    struct Landing *pq = newNode(1, 1, 14, 0);
     printf("222\n");
-    push(pq, 2, 2, 13, 0);
+    push(&pq, 2, 2, 13, 0);
     printf("333\n");
-    push(pq, 2, 3, 11, 0);
+    push(&pq, 2, 3, 11, 0);
     printf("444\n");
-    push(pq, 3, 4, 10, 0);
+    push(&pq, 3, 4, 10, 0);
 
-    while (!isEmpty(pq))
+    printf("\t--printing--\n");
+    while (!isEmpty(&pq))
     {
-        printf("%d ", peek(pq));
-        pop(pq);
+        printf("%d ", peek(&pq));
+        pop(&pq);
     }
 
     return 0;
