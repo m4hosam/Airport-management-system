@@ -11,51 +11,51 @@ struct Landing
     struct Landing *previous;
 };
 
-struct Landing *newNode(int priority, int id, int req_time, int delay)
+struct Landing **newNode(int priority, int id, int req_time, int delay)
 {
-    struct Landing *node = (struct Landing *)malloc(sizeof(struct Landing *));
-    node->id = id;
-    node->priority = priority;
-    node->req_time = req_time;
-    node->delayed = delay;
-    node->next = NULL;
-    node->previous = NULL;
+    struct Landing **node = (struct Landing *)malloc(sizeof(struct Landing *));
+    (*node)->id = id;
+    (*node)->priority = priority;
+    (*node)->req_time = req_time;
+    (*node)->delayed = delay;
+    (*node)->next = NULL;
+    (*node)->previous = NULL;
     printf("77\n");
-    return node;
+    return (*node);
 }
 
-int peek(struct Landing *node)
+int peek(struct Landing **node)
 {
-    return (node->req_time);
+    return ((*node)->req_time);
 }
 
-void pop(struct Landing *head)
+void pop(struct Landing **head)
 {
-    struct Landing *tmp = (head);
-    (head) = (head)->next;
+    struct Landing *tmp = (*head);
+    (*head) = (*head)->next;
     free(tmp);
 }
 
-int isEmpty(struct Landing *node)
+int isEmpty(struct Landing **node)
 {
-    return (node == NULL);
+    return ((*node) == NULL);
 }
 
 // p: priority, d: id, t: requested time, delay: delayed time
-void push(struct Landing *head, int p, int d, int t, int delay)
+void push(struct Landing **head, int p, int d, int t, int delay)
 {
-    struct Landing *start = head;
+    struct Landing *start = (*head);
     printf("node\n");
     // Create new Node
-    struct Landing *new_node = newNode(p, d, t, delay);
+    struct Landing **new_node = newNode(p, d, t, delay);
     printf("888\n");
 
     // the inserting time is less than the head number
-    if ((head)->req_time > t)
+    if ((*head)->req_time > t)
     {
         // Insert New Node before head
-        new_node->next = head;
-        (head) = new_node;
+        new_node->next = (*head);
+        (*head) = new_node;
     }
     else
     {
@@ -123,7 +123,7 @@ int main()
 {
     printf("111\n");
 
-    struct Landing *pq = newNode(1, 1, 14, 0);
+    struct Landing **pq = newNode(1, 1, 14, 0);
     printf("222\n");
     push(pq, 2, 2, 13, 0);
     printf("333\n");
