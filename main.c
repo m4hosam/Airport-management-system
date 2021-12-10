@@ -8,20 +8,16 @@ struct Landing
     int req_time;
     int delayed;
     struct Landing *next;
-    struct Landing *previous;
 };
 
 struct Landing *newNode(int priority, int id, int req_time, int delay)
 {
-    printf("cool") ;
     struct Landing *node = (struct Landing *)malloc(sizeof(struct Landing));
     (node)->id = id;
     (node)->priority = priority;
     (node)->req_time = req_time;
     (node)->delayed = delay;
     (node)->next = NULL;
-    (node)->previous = NULL;
-    printf("77\n");
     return (node);
 }
 
@@ -46,14 +42,16 @@ int isEmpty(struct Landing **node)
 void push(struct Landing **head, int p, int d, int t, int delay)
 {
     struct Landing *start = (*head);
-    printf("nodeh\n");
+
     // Create new Node
     struct Landing *new_node = newNode(p, d, t, delay);
-    printf("888\n");
+
 
     // the inserting time is less than the head number
+
     if ((*head)->req_time > t)
     {
+        printf("req>t\n");
         // Insert New Node before head
         new_node->next = (*head);
         (*head) = new_node;
@@ -70,46 +68,64 @@ void push(struct Landing **head, int p, int d, int t, int delay)
         }
 
         // 2 12 14 , 1 15 14
-        if (start->next->req_time == t)
+        if((start->next) != NULL)
         {
-            if (start->next->priority > p) // swap and push the other element
-            {
-                // the whole logic is in here...
+          if (start->next->req_time == t)
+          {
+              if (start->next->priority > p) // swap and push the other element
+              {
+                  // the whole logic is in here...
+                  // it has been delayed 3 times
+                  if (start->next->delayed == 3)
+                  {
+                      // don't swap push directly
+                      push(head, p, d, ++t, ++delay);
+                  }
+                  else
+                  {
 
-                // it has been delayed 3 times
-                if (start->next->delayed == 3)
-                {
-                    // don't swap push directly
-                    push(head, p, d, ++t, ++delay);
-                }
-                else
-                {
+                      struct Landing *tmp = start->next;
+                      // printf("higher priority comming %d\n",(tmp->delayed));
+                      new_node->next = start->next->next;
+                      start->next = new_node;
+                      push(head, tmp->priority, tmp->id, ++(tmp->req_time), ++(tmp->delayed));
+                  }
+              }
+              else if (start->next->priority < p)
+              {
+                  // don't swap push directly
+                  if (delay == 3)
+                  {
                     struct Landing *tmp = start->next;
+                    // printf("higher priority comming %d\n",(tmp->delayed));
+                    new_node->next = start->next->next;
                     start->next = new_node;
                     push(head, tmp->priority, tmp->id, ++(tmp->req_time), ++(tmp->delayed));
-                }
-            }
-            else if (start->next->priority < p)
-            {
-                // don't swap push directly
-                push(head, p, d, ++t, ++delay);
-            }
-            else
-            {
-                // 1 12 1, 1 13 1
-                if (start->next->id > d)
-                {
-                    // swap then push
-                    struct Landing *tmp = start->next;
-                    start->next = new_node;
-                    push(head, tmp->priority, tmp->id, ++(tmp->req_time), ++(tmp->delayed));
-                }
-                else
-                {
-                    // don't swap push directly
+                  }
+                  else
+                  {
                     push(head, p, d, ++t, ++delay);
-                }
-            }
+                  }
+
+              }
+              else
+              {
+                  // 1 12 1, 1 13 1
+                  if (start->next->id > d)
+                  {
+                      // swap then push
+                      struct Landing *tmp = start->next;
+                      new_node->next = start->next->next;
+                      start->next = new_node;
+                      push(head, tmp->priority, tmp->id, ++(tmp->req_time), ++(tmp->delayed));
+                  }
+                  else
+                  {
+                      // don't swap push directly
+                      push(head, p, d, ++t, ++delay);
+                  }
+              }
+          }
         }
         else
         {
@@ -122,20 +138,20 @@ void push(struct Landing **head, int p, int d, int t, int delay)
 
 int main()
 {
-    printf("111\n");
 
     struct Landing *pq = newNode(1, 1, 14, 0);
-    printf("222\n");
-    push(&pq, 2, 2, 13, 0);
-    printf("333\n");
-    push(&pq, 2, 3, 11, 0);
-    printf("444\n");
-    push(&pq, 3, 4, 10, 0);
+    push(&pq, 3, 2, 15, 0);
+    push(&pq, 2, 3, 15, 0);
+    push(&pq, 1, 4, 16, 0);
+    push(&pq, 1, 5, 15, 0);
+    push(&pq, 1, 6, 17, 0);
 
     printf("\t--printing--\n");
     while (!isEmpty(&pq))
     {
-        printf("%d ", peek(&pq));
+        printf("id: %d ", pq->id);
+        printf(" time: %d ", pq->req_time);
+        printf(" delay: %d \n", pq->delayed);
         pop(&pq);
     }
 
