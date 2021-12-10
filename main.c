@@ -20,7 +20,7 @@ struct Landing *newNode(int priority, int id, int req_time, int delay)
     node->delayed = delay;
     node->next = NULL;
     node->previous = NULL;
-
+    printf("77\n");
     return node;
 }
 
@@ -29,10 +29,10 @@ int peek(struct Landing *node)
     return (node->req_time);
 }
 
-void pop(struct Landing **head)
+void pop(struct Landing *head)
 {
-    struct Landing *tmp = (*head);
-    (*head) = (*head)->next;
+    struct Landing *tmp = (head);
+    (head) = (head)->next;
     free(tmp);
 }
 
@@ -42,22 +42,24 @@ int isEmpty(struct Landing *node)
 }
 
 // p: priority, d: id, t: requested time, delay: delayed time
-void push(struct Landing **head, int p, int d, int t, int delay)
+void push(struct Landing *head, int p, int d, int t, int delay)
 {
-    struct Landing *start = (*head);
-
+    struct Landing *start = head;
+    printf("node\n");
     // Create new Node
     struct Landing *new_node = newNode(p, d, t, delay);
+    printf("888\n");
 
     // the inserting time is less than the head number
-    if ((*head)->req_time > t)
+    if ((head)->req_time > t)
     {
         // Insert New Node before head
-        new_node->next = *head;
-        (*head) = new_node;
+        new_node->next = head;
+        (head) = new_node;
     }
     else
     {
+        // if(req_time of the head is equaled to the new node)
 
         // Traverse the list and find a
         // position to insert new node
@@ -108,16 +110,32 @@ void push(struct Landing **head, int p, int d, int t, int delay)
                 }
             }
         }
-
-        // Either at the ends of the list
-        // or at required position
-        new_node->next = start->next;
-        start->next = new_node;
+        else
+        {
+            // Either at the ends of the list
+            // or at required position
+            start->next = new_node;
+        }
     }
 }
 
 int main()
 {
-    printf("Hello world!\n");
+    printf("111\n");
+
+    struct Landing *pq = newNode(1, 1, 14, 0);
+    printf("222\n");
+    push(pq, 2, 2, 13, 0);
+    printf("333\n");
+    push(pq, 2, 3, 11, 0);
+    printf("444\n");
+    push(pq, 3, 4, 10, 0);
+
+    while (!isEmpty(pq))
+    {
+        printf("%d ", peek(pq));
+        pop(pq);
+    }
+
     return 0;
 }
