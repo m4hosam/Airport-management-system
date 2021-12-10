@@ -1,143 +1,176 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct Landing
-{
-    int priority;
-    int id;
-    int req_time;
-    int delayed;
-    struct Landing *next;
-    struct Landing *previous;
+//yapılar
+
+struct inis_sirasi{
+    int ucak_id;
+    unsigned short oncelik_id;
+    unsigned short inis_saati;
+    struct inis_sirasi * sonraki;
 };
 
-struct Landing *newNode(int priority, int id, int req_time, int delay)
-{
-    printf("cool") ;
-    struct Landing *node = (struct Landing *)malloc(sizeof(struct Landing));
-    (node)->id = id;
-    (node)->priority = priority;
-    (node)->req_time = req_time;
-    (node)->delayed = delay;
-    (node)->next = NULL;
-    (node)->previous = NULL;
-    printf("77\n");
-    return (node);
-}
+struct kalkis_sirasi{
+    int ucak_id;
+    unsigned short oncelik_id;
+    unsigned short kalkis_saati;
+    struct kalkis_sirasi * sonraki;
+};
 
-int peek(struct Landing **node)
-{
-    return ((*node)->req_time);
-}
+struct input_degerleri{
+    unsigned short oncelik_id;
+    int ucak_id;
+    unsigned short talep_inis_saati;
+};
 
-void pop(struct Landing **head)
-{
-    struct Landing *tmp = (*head);
-    (*head) = (*head)->next;
-    free(tmp);
-}
+//global değişkenler
 
-int isEmpty(struct Landing **node)
-{
-    return ((*node) == NULL);
-}
+struct input_degerleri * deger = NULL;
 
-// p: priority, d: id, t: requested time, delay: delayed time
-void push(struct Landing **head, int p, int d, int t, int delay)
-{
-    struct Landing *start = (*head);
-    printf("nodeh\n");
-    // Create new Node
-    struct Landing *new_node = newNode(p, d, t, delay);
-    printf("888\n");
+struct inis_sirasi * inis_ilk = NULL;
+struct inis_sirasi * inis_son = NULL;
+struct kalkis_sirasi * kalkis_ilk = NULL;
+struct kalkis_sirasi * kalkis_son = NULL;
 
-    // the inserting time is less than the head number
-    if ((*head)->req_time > t)
-    {
-        // Insert New Node before head
-        new_node->next = (*head);
-        (*head) = new_node;
-    }
-    else
-    {
-        // if(req_time of the head is equaled to the new node)
+//fonkisyonlar
 
-        // Traverse the list and find a
-        // position to insert new node
-        while (start->next != NULL && start->next->req_time < t)
-        {
-            start = start->next;
-        }
+void input_oku(){
+    int i = 0;
+    deger = (struct input_degerleri *)malloc(sizeof(struct input_degerleri));
 
-        // 2 12 14 , 1 15 14
-        if (start->next->req_time == t)
-        {
-            if (start->next->priority > p) // swap and push the other element
-            {
-                // the whole logic is in here...
+    FILE * fp;
+    fp = fopen("input.txt", "r");
 
-                // it has been delayed 3 times
-                if (start->next->delayed == 3)
-                {
-                    // don't swap push directly
-                    push(head, p, d, ++t, ++delay);
-                }
-                else
-                {
-                    struct Landing *tmp = start->next;
-                    start->next = new_node;
-                    push(head, tmp->priority, tmp->id, ++(tmp->req_time), ++(tmp->delayed));
-                }
-            }
-            else if (start->next->priority < p)
-            {
-                // don't swap push directly
-                push(head, p, d, ++t, ++delay);
-            }
-            else
-            {
-                // 1 12 1, 1 13 1
-                if (start->next->id > d)
-                {
-                    // swap then push
-                    struct Landing *tmp = start->next;
-                    start->next = new_node;
-                    push(head, tmp->priority, tmp->id, ++(tmp->req_time), ++(tmp->delayed));
-                }
-                else
-                {
-                    // don't swap push directly
-                    push(head, p, d, ++t, ++delay);
-                }
-            }
-        }
-        else
-        {
-            // Either at the ends of the list
-            // or at required position
-            start->next = new_node;
-        }
-    }
-}
-
-int main()
-{
-    printf("111\n");
-
-    struct Landing *pq = newNode(1, 1, 14, 0);
-    printf("222\n");
-    push(&pq, 2, 2, 13, 0);
-    printf("333\n");
-    push(&pq, 2, 3, 11, 0);
-    printf("444\n");
-    push(&pq, 3, 4, 10, 0);
-
-    printf("\t--printing--\n");
-    while (!isEmpty(&pq))
-    {
-        printf("%d ", peek(&pq));
-        pop(&pq);
+    while(fscanf(fp, "%hu %d %hu\n", &(deger+i)->oncelik_id, &(deger+i)->ucak_id, &(deger+i)->talep_inis_saati) != EOF){
+        i++;
+        deger = (struct input_degerleri *)realloc(deger, sizeof(struct input_degerleri) * (i+1));
     }
 
+    //input.txt dosyasından okunan değerlerin, talep edilen iniş saatine göre sıralanması
+    int n = sizeof(deger);
+    struct input_degerleri temp;
+    for(int j = 0; j < n-1; j++){
+        for(int k = 0; k < n-1-j; k++){
+            if(deger[k].talep_inis_saati > deger[k+1].talep_inis_saati){
+                temp = deger[k+1]; deger[k+1] = deger[k]; deger[k] = temp;
+            }
+        }
+    }
+
+    fclose(fp);
+}
+
+void enqueue_inis(int index){
+    //input_oku();
+    struct inis_sirasi * yeni = (struct inis_sirasi *)malloc(sizeof(struct inis_sirasi));
+
+    yeni->oncelik_id = (deger+index)->oncelik_id;
+    yeni->ucak_id = (deger+index)->ucak_id;
+    yeni->inis_saati = (deger+index)->talep_inis_saati;
+
+    if(inis_ilk == NULL){
+        inis_ilk = yeni;
+        inis_son = yeni;
+        inis_ilk->sonraki = inis_son;
+    }
+    else{
+        struct inis_sirasi * counter = (struct inis_sirasi *)malloc(sizeof(struct inis_sirasi));
+        struct inis_sirasi * temp = (struct inis_sirasi *)malloc(sizeof(struct inis_sirasi));
+        counter = inis_ilk;
+        int idx = 0;
+        int i = 0;
+        int oncelik = 0;
+        do{
+            //printf("%d %d\n", (deger+index)->talep_inis_saati, counter->inis_saati);
+            if((deger+index)->talep_inis_saati == counter->inis_saati){
+                //printf("%d %d\n", oncelik, counter->oncelik_id);
+                if(yeni->oncelik_id < counter->oncelik_id){
+                    //printf("za\n");
+                    oncelik = 1;
+                    idx = i;
+                }
+            }
+            counter = counter->sonraki;
+            i++;
+        }while(counter != inis_son);
+
+        //printf("%d %d\n", oncelik, idx);
+        counter = inis_ilk;
+        if(oncelik != 0){
+            for(int k = 0; k < idx-1; k++)
+                counter = counter->sonraki;
+            if(inis_ilk == inis_son && counter == inis_ilk){            
+                inis_ilk = yeni;
+                yeni->sonraki = counter;
+                counter->sonraki = NULL;
+                inis_son = counter;
+            }
+            else if(counter->sonraki == inis_son){
+                inis_son->sonraki = yeni;
+                yeni->sonraki = NULL;
+                inis_son = yeni;
+            }
+            else{
+                temp = counter->sonraki;
+                counter->sonraki = yeni;
+                yeni->sonraki = temp;
+            }
+        }
+        else{
+            inis_son->sonraki = yeni;
+            inis_son = yeni;
+        }
+
+        
+
+        /*if((deger+index)->talep_inis_saati == inis_son->inis_saati && yeni->oncelik_id < inis_son->oncelik_id){
+            
+            struct inis_sirasi * t = (struct inis_sirasi *)malloc(sizeof(struct inis_sirasi));
+            t = inis_ilk;
+            while(t->sonraki != inis_son){
+                //printf("za\n");
+                t = t->sonraki;
+            }
+            if(inis_son == inis_ilk && inis_ilk == t){
+                //printf("za\n");
+                inis_ilk = yeni;
+                yeni->sonraki = t;
+                t->sonraki = NULL;
+                inis_son = t;
+            }
+            else{
+                t->sonraki = yeni;
+                yeni->sonraki = inis_son;
+            }
+        }
+        else{
+            inis_son->sonraki = yeni;
+            inis_son = yeni;
+        }*/
+    }
+}
+
+struct inis_sirasi * pull_inis(){
+    struct inis_sirasi * t = (struct inis_sirasi *)malloc(sizeof(struct inis_sirasi));
+    t = inis_ilk;
+    inis_ilk = inis_ilk->sonraki;
+    return t;
+}
+
+int main(){
+    input_oku();
+    for(int i = 0; i < 8; i++){
+        printf("%hu %d %hu\n", deger[i].oncelik_id, deger[i].ucak_id, deger[i].talep_inis_saati);
+    }
+    printf("\n\n");
+    enqueue_inis(0);
+    enqueue_inis(1);
+    enqueue_inis(2);
+    printf("\n\n");
+    printf("%d\n", pull_inis()->ucak_id);
+    printf("%d\n", pull_inis()->ucak_id);
+    printf("%d\n", pull_inis()->ucak_id);
+    //printf("%d\n", pull_inis()->ucak_id);
+    //printf("%d\n", pull_inis()->ucak_id);
     return 0;
 }
