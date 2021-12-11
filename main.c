@@ -29,8 +29,10 @@ struct input_degerleri * deger = NULL;
 
 struct inis_sirasi * inis_ilk = NULL;
 struct inis_sirasi * inis_son = NULL;
+int inis_uzunluk = 0;
 struct kalkis_sirasi * kalkis_ilk = NULL;
 struct kalkis_sirasi * kalkis_son = NULL;
+int kalkis_uzunluk = 0;
 
 //fonkisyonlar
 
@@ -64,37 +66,36 @@ void enqueue_inis(int index){
     //input_oku();
     struct inis_sirasi * yeni = (struct inis_sirasi *)malloc(sizeof(struct inis_sirasi));
 
+    //input dosyasının ilgili satırından okunan değerleri sıranın yeni elemanına atar.
     yeni->oncelik_id = (deger+index)->oncelik_id;
     yeni->ucak_id = (deger+index)->ucak_id;
     yeni->inis_saati = (deger+index)->talep_inis_saati;
 
     if(inis_ilk == NULL){
+        //eğer sıranın ilk elemanı boş ise, yeni eklenen eleman hem ilk hem de son elemandır.
         inis_ilk = yeni;
         inis_son = yeni;
         inis_ilk->sonraki = inis_son;
     }
     else{
+        //sıraya öncelik gözetilerek ekleme yapılır.
         struct inis_sirasi * counter = (struct inis_sirasi *)malloc(sizeof(struct inis_sirasi));
-        struct inis_sirasi * temp = (struct inis_sirasi *)malloc(sizeof(struct inis_sirasi));
-        counter = inis_ilk;
-        int idx = 0;
+        counter = inis_ilk;     //sıranın en ön elemanından başlayarak, yeni elemanın ekleneceği yeri bulmak için, sayar.
+        int idx = 0;            //yeni elemanın ekleneceği yeri belirtir.
         int i = 0;
-        int oncelik = 0;
+        int oncelik = 0;        //eklenecek elemanın önceliğinin düşük olması sebebiyle sıranın sonundan başka bir yere eklenip eklenmeyeceğini belirtir.
         do{
-            //printf("%d %d\n", (deger+index)->talep_inis_saati, counter->inis_saati);
             if((deger+index)->talep_inis_saati == counter->inis_saati){
-                //printf("%d %d\n", oncelik, counter->oncelik_id);
                 if(yeni->oncelik_id < counter->oncelik_id){
-                    //printf("za\n");
                     oncelik = 1;
                     idx = i;
+                    break;
                 }
             }
             counter = counter->sonraki;
             i++;
         }while(counter != inis_son);
 
-        //printf("%d %d\n", oncelik, idx);
         counter = inis_ilk;
         if(oncelik != 0){
             for(int k = 0; k < idx-1; k++)
@@ -105,48 +106,20 @@ void enqueue_inis(int index){
                 counter->sonraki = NULL;
                 inis_son = counter;
             }
-            else if(counter->sonraki == inis_son){
-                inis_son->sonraki = yeni;
-                yeni->sonraki = NULL;
-                inis_son = yeni;
-            }
-            else{
-                temp = counter->sonraki;
-                counter->sonraki = yeni;
-                yeni->sonraki = temp;
-            }
-        }
-        else{
-            inis_son->sonraki = yeni;
-            inis_son = yeni;
-        }
-
-        
-
-        /*if((deger+index)->talep_inis_saati == inis_son->inis_saati && yeni->oncelik_id < inis_son->oncelik_id){
-            
-            struct inis_sirasi * t = (struct inis_sirasi *)malloc(sizeof(struct inis_sirasi));
-            t = inis_ilk;
-            while(t->sonraki != inis_son){
-                //printf("za\n");
-                t = t->sonraki;
-            }
-            if(inis_son == inis_ilk && inis_ilk == t){
-                //printf("za\n");
+            else if(counter == inis_ilk){
+                yeni->sonraki = counter;
                 inis_ilk = yeni;
-                yeni->sonraki = t;
-                t->sonraki = NULL;
-                inis_son = t;
             }
             else{
-                t->sonraki = yeni;
-                yeni->sonraki = inis_son;
+                yeni->sonraki = counter->sonraki;
+                counter->sonraki = yeni;
             }
         }
         else{
             inis_son->sonraki = yeni;
             inis_son = yeni;
-        }*/
+        }
+        inis_uzunluk++;
     }
 }
 
@@ -154,6 +127,7 @@ struct inis_sirasi * pull_inis(){
     struct inis_sirasi * t = (struct inis_sirasi *)malloc(sizeof(struct inis_sirasi));
     t = inis_ilk;
     inis_ilk = inis_ilk->sonraki;
+    inis_uzunluk--;
     return t;
 }
 
@@ -161,16 +135,12 @@ int main(){
     input_oku();
     for(int i = 0; i < 8; i++){
         printf("%hu %d %hu\n", deger[i].oncelik_id, deger[i].ucak_id, deger[i].talep_inis_saati);
+        enqueue_inis(i);
     }
-    printf("\n\n");
-    enqueue_inis(0);
-    enqueue_inis(1);
-    enqueue_inis(2);
-    printf("\n\n");
     printf("%d\n", pull_inis()->ucak_id);
     printf("%d\n", pull_inis()->ucak_id);
     printf("%d\n", pull_inis()->ucak_id);
-    //printf("%d\n", pull_inis()->ucak_id);
-    //printf("%d\n", pull_inis()->ucak_id);
+    printf("%d\n", pull_inis()->ucak_id);
+    printf("%d\n", pull_inis()->ucak_id);
     return 0;
 }
