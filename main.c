@@ -1,146 +1,317 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//yapılar
-
-struct inis_sirasi{
-    int ucak_id;
-    unsigned short oncelik_id;
-    unsigned short inis_saati;
-    struct inis_sirasi * sonraki;
+struct Landing
+{
+    int priority;
+    int id;
+    int landingTime;
+    int delayed;
+    int req_landing;
+    struct Landing *next;
 };
 
-struct kalkis_sirasi{
-    int ucak_id;
-    unsigned short oncelik_id;
-    unsigned short kalkis_saati;
-    struct kalkis_sirasi * sonraki;
+
+//for sorting
+struct FileData
+{
+    int priority;
+    int id;
+    int req_landing;
 };
 
-struct input_degerleri{
-    unsigned short oncelik_id;
-    int ucak_id;
-    unsigned short talep_inis_saati;
-};
+struct FileData * data;
 
-//global değişkenler
 
-struct input_degerleri * deger = NULL;
-
-struct inis_sirasi * inis_ilk = NULL;
-struct inis_sirasi * inis_son = NULL;
-int inis_uzunluk = 0;
-struct kalkis_sirasi * kalkis_ilk = NULL;
-struct kalkis_sirasi * kalkis_son = NULL;
-int kalkis_uzunluk = 0;
-
-//fonkisyonlar
-
-void input_oku(){
+//for sorting
+int ReadFile(){
     int i = 0;
-    deger = (struct input_degerleri *)malloc(sizeof(struct input_degerleri));
+    data = (struct FileData *)malloc(sizeof(struct FileData));
 
     FILE * fp;
     fp = fopen("input.txt", "r");
 
-    while(fscanf(fp, "%hu %d %hu\n", &(deger+i)->oncelik_id, &(deger+i)->ucak_id, &(deger+i)->talep_inis_saati) != EOF){
+    while(fscanf(fp, "%d %d %d\n", &(data+i)->priority, &(data+i)->id, &(data+i)->req_landing) != EOF){
         i++;
-        deger = (struct input_degerleri *)realloc(deger, sizeof(struct input_degerleri) * (i+1));
+        data = (struct FileData *)realloc(data, sizeof(struct FileData) * (i+1));
     }
 
-    //input.txt dosyasından okunan değerlerin, talep edilen iniş saatine göre sıralanması
-    int n = sizeof(deger);
-    struct input_degerleri temp;
-    for(int j = 0; j < n-1; j++){
-        for(int k = 0; k < n-1-j; k++){
-            if(deger[k].talep_inis_saati > deger[k+1].talep_inis_saati){
-                temp = deger[k+1]; deger[k+1] = deger[k]; deger[k] = temp;
+    //Sort the data based on requested landing time
+    int n = sizeof(data);
+    struct FileData temp;
+    for(int k = 0; k < n-1; k++){
+        for(int j = 0; j < n-1-k; j++){
+            if(data[j].req_landing > data[j+1].req_landing){
+                temp = data[j+1];
+                data[j+1] = data[j];
+                data[j] = temp;
             }
         }
     }
 
-    fclose(fp);
+    return n;
 }
 
-void enqueue_inis(int index){
-    //input_oku();
-    struct inis_sirasi * yeni = (struct inis_sirasi *)malloc(sizeof(struct inis_sirasi));
+struct Landing *newNode(int priority, int id, int landingTime, int delay)
+{
+    struct Landing *node = (struct Landing *)malloc(sizeof(struct Landing));
+    (node)->id = id;
+    (node)->priority = priority;
+    (node)->landingTime = landingTime;
+    (node)->req_landing = landingTime;
+    (node)->delayed = delay;
+    (node)->next = NULL;
+    return (node);
+}
 
-    //input dosyasının ilgili satırından okunan değerleri sıranın yeni elemanına atar.
-    yeni->oncelik_id = (deger+index)->oncelik_id;
-    yeni->ucak_id = (deger+index)->ucak_id;
-    yeni->inis_saati = (deger+index)->talep_inis_saati;
+int peek(struct Landing **node)
+{
+    return ((*node)->landingTime);
+}
 
-    if(inis_ilk == NULL){
-        //eğer sıranın ilk elemanı boş ise, yeni eklenen eleman hem ilk hem de son elemandır.
-        inis_ilk = yeni;
-        inis_son = yeni;
-        inis_ilk->sonraki = inis_son;
+void pop(struct Landing **head)
+{
+    struct Landing *tmp = (*head);
+    (*head) = (*head)->next;
+    free(tmp);
+}
+
+int isEmpty(struct Landing **node)
+{
+    return ((*node) == NULL);
+}
+
+int LandingCount = 0;
+
+// p: priority, d: id, t: requested time, delay: delayed time
+void push(struct Landing **head, int p, int d, int t, int delay)
+{
+    struct Landing *start = (*head);
+    struct Landing *new_node = newNode(p, d, t, delay);
+
+    /*if(LandingCount == 24){
+        printf("Havalimani gunluk kapasitesini doldurmustur. %d ID'li ucus Sabiha Gokcen Havaalanına yonlendiriliyor.\n", new_node->id);
+    }*/
+    if (start->next == NULL)
+    {
+        start->next = new_node;
+        printf("%d ID'li ucak icin %d saatli inis talebi onaylanmistir.\n", start->next->id, start->next->landingTime);
     }
-    else{
-        //sıraya öncelik gözetilerek ekleme yapılır.
-        struct inis_sirasi * counter = (struct inis_sirasi *)malloc(sizeof(struct inis_sirasi));
-        counter = inis_ilk;     //sıranın en ön elemanından başlayarak, yeni elemanın ekleneceği yeri bulmak için, sayar.
-        int idx = 0;            //yeni elemanın ekleneceği yeri belirtir.
-        int i = 0;
-        int oncelik = 0;        //eklenecek elemanın önceliğinin düşük olması sebebiyle sıranın sonundan başka bir yere eklenip eklenmeyeceğini belirtir.
-        do{
-            if((deger+index)->talep_inis_saati == counter->inis_saati){
-                if(yeni->oncelik_id < counter->oncelik_id){
-                    oncelik = 1;
-                    idx = i;
-                    break;
-                }
+    else
+    {
+        // printf("v: %d,t: %d\n", start->next->landingTime, t);
+        if ((*head)->next->landingTime > t)
+        {
+            // Insert New Node before head
+            struct Landing *temp = start->next;
+            (*head)->next = new_node;
+            new_node->next = temp;
+            printf("%d ID'li ucak icin %d saatli inis talebi onaylanmistir.\n", new_node->id, new_node->landingTime);
+        }
+        else if(LandingCount == 24){
+            while (start->next != NULL && start->next->landingTime < t){
+                start = start->next;
             }
-            counter = counter->sonraki;
-            i++;
-        }while(counter != inis_son);
-
-        counter = inis_ilk;
-        if(oncelik != 0){
-            for(int k = 0; k < idx-1; k++)
-                counter = counter->sonraki;
-            if(inis_ilk == inis_son && counter == inis_ilk){            
-                inis_ilk = yeni;
-                yeni->sonraki = counter;
-                counter->sonraki = NULL;
-                inis_son = counter;
+            if(start->next->priority > p){
+                struct Landing * tmp = start->next;
+                new_node->next = start->next->next;
+                new_node->landingTime = start->next->landingTime;
+                LandingCount--;
+                printf("%d ID'li ucak icin %d saatli inis talebi onaylanmistir.\n", d, t);
+                printf("%d ID'li ucak, kapasite dolu oldugu icin Sabiha Gokcen Havalimani'na yonlendirilmistir.", tmp->id);
+                free(tmp);
             }
-            else if(counter == inis_ilk){
-                yeni->sonraki = counter;
-                inis_ilk = yeni;
+            else if(start->next == NULL){
+                LandingCount--;
+                printf("Kapasite doldugu icin %d ID'li ucak Sabiha Gokcen Havalimani'na yonlendirilmistir.\n", d);
             }
             else{
-                yeni->sonraki = counter->sonraki;
-                counter->sonraki = yeni;
+                push(head, p, d, ++t, ++delay);
             }
         }
-        else{
-            inis_son->sonraki = yeni;
-            inis_son = yeni;
+        else
+        {
+            while (start->next != NULL && start->next->landingTime < t)
+            {
+                start = start->next;
+            }
+
+            // 2 12 14 , 1 15 14
+            if ((start->next) != NULL)
+            {
+
+                if (start->next->landingTime == t)
+                {
+
+                    if (start->next->priority > p) // swap and push the other element
+                    {
+                        // the whole logic is in here...
+                        // it has been delayed 3 times
+                        // printf("22");
+                        if (start->next->delayed == 3)
+                        {
+                            // don't swap push directly
+                            if (delay == 3)
+                            {
+                                printf("%d ID'li ucak Sabiha Gokcen Havalimani'na yonlendirilmistir.\n", start->next->id);
+                                new_node->next = start->next->next;
+                                start->next = new_node;
+                                printf("%d ID'li ucak icin %d saatli inis talebi onaylanmistir.\n", new_node->id, new_node->landingTime);
+                            }
+                            else
+                            {
+                                printf("%d ID'li ucagin ucusu %d saatine ertelenmistir.\n", d, t + 1);
+                                push(head, p, d, ++t, ++delay);
+                            }
+                        }
+                        else
+                        {
+                            struct Landing *tmp = start->next;
+                            new_node->next = start->next->next;
+                            start->next = new_node;
+                            printf("%d ID'li ucagin %d saatli ucus talebi onaylanmistir.\n", new_node->id, new_node->landingTime);
+                            printf("%d ID'li ucagin ucusu %d saatine ertelenmistir.\n", tmp->id, tmp->landingTime + 1);
+                            push(head, tmp->priority, tmp->id, ++(tmp->landingTime), ++(tmp->delayed));
+                            free(tmp);
+                        }
+                    }
+                    else if (start->next->priority < p)
+                    {
+                        // don't swap push directly
+                        if (delay == 3)
+                        {
+                            if (start->next->delayed == 3)
+                            {
+                                printf("%d ID'li ucak Sabiha Gokcen Havalimani'na yonlendirilmistir.\n", d);
+                            }
+                            else
+                            {
+                                struct Landing *tmp = start->next;
+                                new_node->next = start->next->next;
+                                start->next = new_node;
+                                printf("%d ID'li ucagin ucusunun daha fazla ertelenmemesi adina %d ID'li ucagin ucusu %d saatine ertelenmistir.\n", d, tmp->id, tmp->landingTime + 1);
+                                push(head, tmp->priority, tmp->id, ++(tmp->landingTime), ++(tmp->delayed));
+                                printf("%d ID'li ucagin %d saatli ucus talebi onaylanmistir.\n", new_node->id, new_node->landingTime);
+                                free(tmp);
+                            }
+                        }
+                        else
+                        {
+                            printf("%d ID'li ucagin %d saatli ucus talebi onaylanmistir.\n", d, t);
+                            push(head, p, d, ++t, ++delay);
+                        }
+                    }
+                    else
+                    {
+                        // Same priority diffrent id and delays
+
+                        if (delay == 3)
+                        {
+                            if (start->next->delayed == 3)
+                            {
+                                // smaller id have the priority to land first
+                                if (start->next->id < d)
+                                    printf("%d ID'li ucak Sabiha Gokcen Havalimani'na yonlendirilmistir.\n", d);
+                                else
+                                {
+                                    printf("%d ID'li ucak Sabiha Gokcen Havalimani'na yonlendirilmistir.\n", start->next->id);
+                                    new_node->next = start->next->next;
+                                    start->next = new_node;
+                                    printf("%d ID'li ucagin %d saatli ucus talebi onaylanmistir.\n", new_node->id, new_node->landingTime);
+                                }
+                            }
+                            else
+                            {
+                                struct Landing *tmp = start->next;
+                                new_node->next = start->next->next;
+                                start->next = new_node;
+                                push(head, tmp->priority, tmp->id, ++(tmp->landingTime), ++(tmp->delayed));
+                                printf("%d ID'li ucagin %d saatli ucus talebi onaylanmistir.\n", new_node->id, new_node->landingTime);
+                                free(tmp);
+                            }
+                        }
+                        else
+                        {
+                            if (start->next->delayed == 3)
+                            {
+                                printf("%d ID'li ucagin %d saatli ucus talebi onaylanmistir.\n", d, t);
+                                push(head, p, d, ++t, ++delay);
+                            }
+                            else
+                            {
+                                if (start->next->id < d)
+                                {
+                                    printf("%d ID'li ucagin %d saatli ucus talebi onaylanmistir.\n", d, t);
+                                    push(head, p, d, ++t, ++delay);
+                                }
+                                else
+                                {
+                                    struct Landing *tmp = start->next;
+                                    new_node->next = start->next->next;
+                                    start->next = new_node;
+                                    push(head, tmp->priority, tmp->id, ++(tmp->landingTime), ++(tmp->delayed));
+                                    printf("%d ID'li ucagin %d saatli ucus talebi onaylanmistir.\n", new_node->id, new_node->landingTime);
+                                    free(tmp);
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // if the number is in beteen the linked list
+                    new_node->next = start->next;
+                    start->next = new_node;
+                    printf("%d ID'li ucagin %d saatli ucus talebi onaylanmistir.\n", new_node->id, new_node->landingTime);
+                }
+            }
+            else
+            {
+
+                // reached at the ends of the list
+                printf("%d ID'li ucagin %d saatli ucus talebi onaylanmistir.\n", new_node->id, new_node->landingTime);
+                start->next = new_node;
+            }
         }
-        inis_uzunluk++;
     }
 }
 
-struct inis_sirasi * pull_inis(){
-    struct inis_sirasi * t = (struct inis_sirasi *)malloc(sizeof(struct inis_sirasi));
-    t = inis_ilk;
-    inis_ilk = inis_ilk->sonraki;
-    inis_uzunluk--;
-    return t;
-}
+int main()
+{
+    /*FILE *fp;
+    if ((fp = fopen("input.txt", "r")) == NULL)
+    {
+        printf("File not found");
+        return 1;
+    }*/
+    int count = ReadFile();
+    struct Landing *pq = newNode(-1, -1, -1, -1);
+    //int p, d, t;
+    /*while (fscanf(fp, "%d %d %d\n", &p, &d, &t) != EOF)
+    {
+        printf("\np: %d,id: %d,t: %d\n", p, d, t);
+        push(&pq, p, d, t, 0);
+        LandingCount++;
+    }*/
 
-int main(){
-    input_oku();
-    for(int i = 0; i < 8; i++){
-        printf("%hu %d %hu\n", deger[i].oncelik_id, deger[i].ucak_id, deger[i].talep_inis_saati);
-        enqueue_inis(i);
+    //assigning sorted values
+    for(int i = 0; i < count; i++){
+        printf("p: %d, id: %d, t: %d\n", data[i].priority, data[i].id, data[i].req_landing);
+        push(&pq, data[i].priority, data[i].id, data[i].req_landing, 0);
+        LandingCount++;
     }
-    printf("%d\n", pull_inis()->ucak_id);
-    printf("%d\n", pull_inis()->ucak_id);
-    printf("%d\n", pull_inis()->ucak_id);
-    printf("%d\n", pull_inis()->ucak_id);
-    printf("%d\n", pull_inis()->ucak_id);
+
+    pq = pq->next;
+    while (!isEmpty(&pq))
+    {
+        printf("priority: %d ", pq->priority);
+        printf("id: %d ", pq->id);
+        printf(" time: %d ", pq->landingTime);
+        printf(" delay: %d \n", pq->delayed);
+        pop(&pq);
+    }
+
+    printf("\n%d\n", LandingCount);
+
     return 0;
 }
