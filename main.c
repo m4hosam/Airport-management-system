@@ -10,7 +10,8 @@ struct Landing
     int req_landing;
     struct Landing *next;
 };
-struct Landing *sabiha;
+int sabiha[20];
+int count = 0;
 
 struct Landing *newNode(int priority, int id, int landingTime, int delay, int req_landing)
 {
@@ -94,10 +95,9 @@ void push(struct Landing **head, int p, int d, int t, int delay, int req)
                             if (delay == 3)
                             {
                                 printf("\tUcak id: %d will land on Sabiha\n\n", start->next->id);
-                                while (sabiha->next != NULL)
-                                    sabiha = sabiha->next;
+                                sabiha[count] = start->next->id;
+                                count++;
 
-                                sabiha->next = newNode(start->next->priority, start->next->id, start->next->landingTime, start->next->delayed, start->next->req_landing);
                                 new_node->next = start->next->next;
                                 start->next = new_node;
                                 printf("\tucak id: %d inis izin talebiniz saat (%d) onaylanmistir\n", new_node->id, new_node->landingTime);
@@ -127,10 +127,8 @@ void push(struct Landing **head, int p, int d, int t, int delay, int req)
                             if (start->next->delayed == 3)
                             {
                                 printf("\tUcak id: %d will land on Sabiha\n\n", d);
-                                while (sabiha->next != NULL)
-                                    sabiha = sabiha->next;
-
-                                sabiha->next = newNode(p, d, t, delay, req);
+                                sabiha[count] = d;
+                                count++;
                             }
                             else
                             {
@@ -160,18 +158,14 @@ void push(struct Landing **head, int p, int d, int t, int delay, int req)
                                 if (start->next->id < d)
                                 {
                                     printf("\tUcak id: %d will land on Sabiha\n\n", d);
-                                    while (sabiha->next != NULL)
-                                        sabiha = sabiha->next;
-
-                                    sabiha->next = newNode(p, d, t, delay, req);
+                                    sabiha[count] = d;
+                                    count++;
                                 }
                                 else
                                 {
                                     printf("\tUcak id: %d will land on Sabiha\n\n", start->next->id);
-                                    while (sabiha->next != NULL)
-                                        sabiha = sabiha->next;
-
-                                    sabiha->next = newNode(start->next->priority, start->next->id, start->next->landingTime, start->next->delayed, start->next->req_landing);
+                                    sabiha[count] = start->next->id;
+                                    count++;
 
                                     new_node->next = start->next->next;
                                     start->next = new_node;
@@ -243,9 +237,7 @@ int main()
         return 1;
     }
     struct Landing *pq = newNode(-1, -1, -1, -1, -1);
-    sabiha = newNode(-1, -1, -1, -1, -1);
-    struct Landing *headd = sabiha;
-    int p, d, t;
+    int p, d, t, kalkis, gecikme;
     char buf[100];
     fgets(buf, 100, fp);
     while (fscanf(fp, "%d %d %d\n", &p, &d, &t) != EOF)
@@ -254,14 +246,13 @@ int main()
         push(&pq, p, d, t, 0, t);
     }
 
-    // push(&pq, 1, 1, 14, 0);
-    // push(&pq, 2, 2, 13, 0);
-    // push(&pq, 2, 3, 11, 0);
-    // push(&pq, 3, 4, 10, 0);
-    // push(&pq, 4, 5, 16, 0);
-    // push(&pq, 2, 6, 10, 0);
-    // push(&pq, 3, 7, 2, 0);
-    // push(&pq, 3, 8, 14, 0);
+    FILE *outFile;
+    if ((outFile = fopen("output.txt", "w")) == NULL)
+    {
+        printf("File not found");
+        return 1;
+    }
+    fprintf(outFile, "oncelik_id\t    ucak_id   talep_edilen_inis_saati\tinisSaat   gecikme_suresi   kalkis\n");
 
     printf("\t--printing--\n");
     while (!isEmpty(&pq))
@@ -271,18 +262,19 @@ int main()
         printf("l_t: %d ", pq->landingTime);
         printf("req_t: %d ", pq->req_landing);
         printf(" delay: %d \n", pq->delayed);
+        kalkis = (pq->landingTime) + 1;
+        gecikme = (pq->landingTime) - (pq->req_landing);
+        if (pq->id != -1)
+            fprintf(outFile, "\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n", pq->priority, pq->id, pq->req_landing, pq->landingTime, gecikme, kalkis);
         pop(&pq);
     }
     printf("\n\n\t\t-----Sabiha\n");
-    while (headd->next != NULL)
+    for (int i = 0; i < count; i++)
     {
-        printf("priority: %d ", headd->priority);
-        printf("id: %d ", headd->id);
-        printf("l_t: %d ", headd->landingTime);
-        printf("req_t: %d ", headd->req_landing);
-        printf(" delay: %d \n", headd->delayed);
-        headd = headd->next;
+        printf("id[%d]: %d\n", i, sabiha[i]);
     }
+    fclose(fp);
+    fclose(outFile);
 
     return 0;
 }
