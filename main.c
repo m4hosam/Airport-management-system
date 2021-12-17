@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct Landing
 {
@@ -21,11 +22,6 @@ struct Landing *newNode(int priority, int id, int landingTime, int delay)
     (node)->delayed = delay;
     (node)->next = NULL;
     return (node);
-}
-
-int peek(struct Landing **node)
-{
-    return ((*node)->landingTime);
 }
 
 void pop(struct Landing **head)
@@ -91,8 +87,8 @@ void push(struct Landing **head, int p, int d, int t, int delay)
                             // don't swap push directly
                             if (delay == 3)
                             {
-                                printf("\t-iki ucak 3 kere ertelendi-dusuk oncelik[%d] id olan ucak Sabiha'ya yonlandirlildi\n\n", start->next->id);
-                                sabiha[count] = start->next->id;
+                                printf("\t-iki ucak 3 kere ertelendi-dusuk oncelik[%d] id olan ucak Sabiha'ya yonlandirlildi\n", start->next->id);
+                                sabiha[count] = start->next->priority;
                                 count++;
 
                                 new_node->next = start->next->next;
@@ -125,7 +121,7 @@ void push(struct Landing **head, int p, int d, int t, int delay)
                         {
                             if (start->next->delayed == 3)
                             {
-                                printf("\t-iki ucak 3 kere ertelendi-dusuk oncelik[%d] id olan ucak Sabiha'ya yonlandirlildi\n\n", d);
+                                printf("\t-iki ucak 3 kere ertelendi-dusuk oncelik[%d] id olan ucak Sabiha'ya yonlandirlildi\n", d);
                                 sabiha[count] = d;
                                 count++;
                             }
@@ -160,13 +156,13 @@ void push(struct Landing **head, int p, int d, int t, int delay)
                                 // smaller id have the priority to land first
                                 if (start->next->id < d)
                                 {
-                                    printf("\t-iki ucak 3 kere ertelendi-yuksek id olan[%d] id olan ucak Sabiha'ya yonlandirlildi\n\n", d);
+                                    printf("\t-iki ucak 3 kere ertelendi-yuksek id olan[%d] id olan ucak Sabiha'ya yonlandirlildi\n", d);
                                     sabiha[count] = d;
                                     count++;
                                 }
                                 else
                                 {
-                                    printf("\t-iki ucak 3 kere ertelendi-yuksek id olan[%d] id olan ucak Sabiha'ya yonlandirlildi\n\n", start->next->id);
+                                    printf("\t-iki ucak 3 kere ertelendi-yuksek id olan[%d] id olan ucak Sabiha'ya yonlandirlildi\n", start->next->id);
                                     sabiha[count] = start->next->id;
                                     count++;
 
@@ -246,7 +242,8 @@ int main()
         return 1;
     }
     struct Landing *pq = newNode(-1, -1, -1, -1);
-    int p, d, t, kalkis, req_time;
+    int p, d, t, kalkis, req_time, landingTime;
+
     char buf[100];
     fgets(buf, 100, fp);
     while (fscanf(fp, "%d %d %d\n", &p, &d, &t) != EOF)
@@ -261,34 +258,48 @@ int main()
         printf("File not found");
         return 1;
     }
-    fprintf(outFile, "    oncelik_id\t    ucak_id   talep_edilen_inis_saati\tinisSaat   gecikme_suresi   kalkis\n");
+    fprintf(outFile, "    oncelik_id\t    ucak_id   talep_edilen_inis_saati\tinisSaat\t\t   gecikme_suresi   kalkis\n");
 
     printf("\t--printing--\n");
     int i = 0;
+    char tracker[100] = "\t\t";
     while (!isEmpty(&pq))
     {
+
+        req_time = (pq->landingTime) - (pq->delayed);
+        landingTime = pq->landingTime;
+        kalkis = (pq->landingTime) + 1;
+
+        if (pq->landingTime >= 24)
+        {
+            if (pq->landingTime == 24)
+            {
+                kalkis = (pq->landingTime) - 23;
+            }
+            else
+            {
+                landingTime = (pq->landingTime) - 24;
+                strcpy(tracker, " ErtesiGun/Sabiha");
+                kalkis = (pq->landingTime) - 23;
+            }
+        }
+
+        if (pq->id != -1)
+            fprintf(outFile, "\t%d\t\t%d\t\t%d\t\t%d%s\t\t%d\t\t%d%s\n", pq->priority, pq->id, req_time, landingTime, tracker, pq->delayed, kalkis, tracker);
         printf("[%d]priority: %d ", i, pq->priority);
         printf("id: %d ", pq->id);
-        printf("l_t: %d ", pq->landingTime);
+        printf("l_t: %d ", landingTime);
         printf(" delay: %d \n", pq->delayed);
-        kalkis = (pq->landingTime) + 1;
-        req_time = (pq->landingTime) - (pq->delayed);
-        if (pq->id != -1)
-            fprintf(outFile, "\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n", pq->priority, pq->id, req_time, pq->landingTime, pq->delayed, kalkis);
         pop(&pq);
         i++;
     }
-    printf("\n\n\t\t-----Sabiha\n");
+    printf("\n\n\t\t-----Sabiha-----\n");
     for (int i = 0; i < count; i++)
     {
-        printf("id[%d]: %d\n", i, sabiha[i]);
+        printf("[%d]Ucak id: %d Sabihaya yonlendirildi\n", i + 1, sabiha[i]);
     }
     fclose(fp);
     fclose(outFile);
-    printf("\n--------\n");
-    int del = 0;
-    del = (del == 1) ? 10 : 9;
-    printf("del: %d", del);
 
     return 0;
 }
