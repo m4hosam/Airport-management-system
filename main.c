@@ -50,7 +50,7 @@ void push(struct Landing **head, int p, int d, int t, int delay)
     if (start->next == NULL)
     {
         start->next = new_node;
-        printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) onaylanmistir\n", start->next->id, start->next->landingTime);
+        printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmistir\n", start->next->id, start->next->landingTime);
     }
     else
     {
@@ -61,7 +61,7 @@ void push(struct Landing **head, int p, int d, int t, int delay)
             struct Landing *temp = start->next;
             (*head)->next = new_node;
             new_node->next = temp;
-            printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) onaylanmistir\n", new_node->id, new_node->landingTime);
+            printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmistir\n", new_node->id, new_node->landingTime);
         }
         else
         {
@@ -87,17 +87,17 @@ void push(struct Landing **head, int p, int d, int t, int delay)
                             // don't swap push directly
                             if (delay == 3)
                             {
-                                printf("\t-iki ucak 3 kere ertelendi-dusuk oncelik[%d] id olan ucak Sabiha'ya yonlandirlildi\n", start->next->id);
+                                printf("\t-iki ucak 3 kere ertelenmis oldugundan dolayi dusuk oncelik [%d] id olan ucak Sabiha Gokcen'e yonlendirilmistir\n", start->next->id);
                                 sabiha[count] = start->next->priority;
                                 count++;
 
                                 new_node->next = start->next->next;
                                 start->next = new_node;
-                                printf("\t-yuksek oncelik-[%d] id olan ucak inis izin talebiniz saat (%d) onaylanmistir\n", new_node->id, new_node->landingTime);
+                                printf("\t-yuksek oncelik-[%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmistir\n", new_node->id, new_node->landingTime);
                             }
                             else
                             {
-                                printf("\t-3 kere ertelen ucak yer aldi- dolayi [%d] id olan ucak inis izin talebiniz saat (%d) onaylanmamistir\n", d, t);
+                                printf("\t-3 kere ertelen ucak yer aldigindan dolayi [%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmamistir\n", d, t);
                                 // t = (t == 24) ? 0 : t;
                                 push(head, p, d, ++t, ++delay);
                             }
@@ -107,8 +107,8 @@ void push(struct Landing **head, int p, int d, int t, int delay)
                             struct Landing *tmp = start->next;
                             new_node->next = start->next->next;
                             start->next = new_node;
-                            printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) onaylanmistir\n", new_node->id, new_node->landingTime);
-                            printf("\t-dusuk oncelik-[%d] id olan ucak inis izin talebiniz saat (%d) onaylanmamistir\n", tmp->id, tmp->landingTime);
+                            printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmistir\n", new_node->id, new_node->landingTime);
+                            printf("\t-dusuk oncelik-[%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmamistir\n", tmp->id, tmp->landingTime);
                             // tmp->landingTime = (tmp->landingTime == 24) ? 0 : tmp->landingTime;
                             push(head, tmp->priority, tmp->id, ++(tmp->landingTime), ++(tmp->delayed));
                             free(tmp);
@@ -121,7 +121,7 @@ void push(struct Landing **head, int p, int d, int t, int delay)
                         {
                             if (start->next->delayed == 3)
                             {
-                                printf("\t-iki ucak 3 kere ertelendi-dusuk oncelik[%d] id olan ucak Sabiha'ya yonlandirlildi\n", d);
+                                printf("\t-iki ucagin 3 kere ertelenmis olmasindan dolayi dusuk oncelikli [%d] id olan ucak Sabiha Gokcen'e yonlendirilmistir\n", d);
                                 sabiha[count] = d;
                                 count++;
                             }
@@ -130,8 +130,8 @@ void push(struct Landing **head, int p, int d, int t, int delay)
                                 struct Landing *tmp = start->next;
                                 new_node->next = start->next->next;
                                 start->next = new_node;
-                                printf("\t-3 kere ertelen ucak yer aldi- dolayi [%d] id olan ucak inis izin talebiniz saat (%d) onaylanmamistir\n", tmp->id, tmp->landingTime);
-                                printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) onaylanmistir\n", new_node->id, new_node->landingTime);
+                                printf("\t-3 kere ertelen ucak yer almasindan dolayi [%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmamistir\n", tmp->id, tmp->landingTime);
+                                printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmistir\n", new_node->id, new_node->landingTime);
                                 // tmp->landingTime = (tmp->landingTime == 24) ? 0 : tmp->landingTime;
                                 push(head, tmp->priority, tmp->id, ++(tmp->landingTime), ++(tmp->delayed));
 
@@ -140,7 +140,7 @@ void push(struct Landing **head, int p, int d, int t, int delay)
                         }
                         else
                         {
-                            printf("\t-dusuk oncelik-[%d] id olan ucak inis izin talebiniz saat (%d) onaylanmamistir\n", d, t);
+                            printf("\t-dusuk oncelik-[%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmamistir\n", d, t);
                             // t = (t == 24) ? 0 : t;
                             push(head, p, d, ++t, ++delay);
                         }
@@ -156,19 +156,19 @@ void push(struct Landing **head, int p, int d, int t, int delay)
                                 // smaller id have the priority to land first
                                 if (start->next->id < d)
                                 {
-                                    printf("\t-iki ucak 3 kere ertelendi-yuksek id olan[%d] id olan ucak Sabiha'ya yonlandirlildi\n", d);
+                                    printf("\t-iki ucagin 3 kere ertelenmis olmasindan dolayi yuksek id olan [%d] ucak Sabiha Gokcen'e yonlendirilmistir\n", d);
                                     sabiha[count] = d;
                                     count++;
                                 }
                                 else
                                 {
-                                    printf("\t-iki ucak 3 kere ertelendi-yuksek id olan[%d] id olan ucak Sabiha'ya yonlandirlildi\n", start->next->id);
+                                    printf("\t-iki ucagin 3 kere ertelenmis olmasindan dolayi yuksek id olan [%d] ucak Sabiha Gokcen'e yonlendirilmistir\n", start->next->id);
                                     sabiha[count] = start->next->id;
                                     count++;
 
                                     new_node->next = start->next->next;
                                     start->next = new_node;
-                                    printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) onaylanmistir\n", new_node->id, new_node->landingTime);
+                                    printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmistir\n", new_node->id, new_node->landingTime);
                                 }
                             }
                             else
@@ -176,8 +176,8 @@ void push(struct Landing **head, int p, int d, int t, int delay)
                                 struct Landing *tmp = start->next;
                                 new_node->next = start->next->next;
                                 start->next = new_node;
-                                printf("\t-3 kere ertelen ucak yer aldi- dolayi [%d] id olan ucak inis izin talebiniz saat (%d) onaylanmamistir\n", tmp->id, tmp->landingTime);
-                                printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) onaylanmistir\n", new_node->id, new_node->landingTime);
+                                printf("\t-3 kere ertelen ucak yer almasindan dolayi [%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmamistir\n", tmp->id, tmp->landingTime);
+                                printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmistir\n", new_node->id, new_node->landingTime);
                                 // tmp->landingTime = (tmp->landingTime == 24) ? 0 : tmp->landingTime;
                                 push(head, tmp->priority, tmp->id, ++(tmp->landingTime), ++(tmp->delayed));
                                 free(tmp);
@@ -187,7 +187,7 @@ void push(struct Landing **head, int p, int d, int t, int delay)
                         {
                             if (start->next->delayed == 3)
                             {
-                                printf("\t-3 kere ertelen ucak yer aldi- dolayi [%d] id olan ucak inis izin talebiniz saat (%d) onaylanmamistir\n", d, t);
+                                printf("\t-3 kere ertelen ucak yer almasindan dolayi [%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmamistir\n", d, t);
                                 // t = (t == 24) ? 0 : t;
                                 push(head, p, d, ++t, ++delay);
                             }
@@ -195,7 +195,7 @@ void push(struct Landing **head, int p, int d, int t, int delay)
                             {
                                 if (start->next->id < d)
                                 {
-                                    printf("\t-ayni oncelik yuksek id- dolayi [%d] id olan ucak inis izin talebiniz saat (%d) onaylanmamistir\n", d, t);
+                                    printf("\t-ayni oncelik yuksek id- olmasindan dolayi [%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmamistir\n", d, t);
                                     // t = (t == 24) ? 0 : t;
                                     push(head, p, d, ++t, ++delay);
                                 }
@@ -204,8 +204,8 @@ void push(struct Landing **head, int p, int d, int t, int delay)
                                     struct Landing *tmp = start->next;
                                     new_node->next = start->next->next;
                                     start->next = new_node;
-                                    printf("\t-ayni oncelik yuksek id- dolayi [%d] id olan ucak inis izin talebiniz saat (%d) onaylanmamistir\n", tmp->id, tmp->landingTime);
-                                    printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) onaylanmistir\n", new_node->id, new_node->landingTime);
+                                    printf("\t-ayni oncelik yuksek id- olmasindan dolayi [%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmamistir\n", tmp->id, tmp->landingTime);
+                                    printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmistir\n", new_node->id, new_node->landingTime);
                                     // tmp->landingTime = (tmp->landingTime == 24) ? 0 : tmp->landingTime;
                                     push(head, tmp->priority, tmp->id, ++(tmp->landingTime), ++(tmp->delayed));
                                     free(tmp);
@@ -219,14 +219,14 @@ void push(struct Landing **head, int p, int d, int t, int delay)
                     // if the number is in beteen the linked list
                     new_node->next = start->next;
                     start->next = new_node;
-                    printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) onaylanmistir\n", new_node->id, new_node->landingTime);
+                    printf("\t[%d] id olan ucak inis izin talebiniz saat (%d) icin onaylanmistir\n", new_node->id, new_node->landingTime);
                 }
             }
             else
             {
 
                 // reached at the ends of the list
-                printf("\t[%d] id olan ucak izin talebiniz saat (%d) onaylanmistir\n", new_node->id, new_node->landingTime);
+                printf("\t[%d] id olan ucak izin talebiniz saat (%d) icin onaylanmistir\n", new_node->id, new_node->landingTime);
                 start->next = new_node;
             }
         }
@@ -258,9 +258,9 @@ int main()
         printf("File not found");
         return 1;
     }
-    fprintf(outFile, "    oncelik_id\t    ucak_id   talep_edilen_inis_saati\tinisSaat\t\t   gecikme_suresi   kalkis\n");
+    fprintf(outFile, "oncelik_id\t|\tucak_id\t|\ttalep_edilen_inis_saati\t|\tinisSaat\t|\tgecikme_suresi\t\t\t|\tkalkis\n");
 
-    printf("\t--printing--\n");
+    printf("\n\n\t--printing--\n");
     int i = 0;
     char tracker[100] = "\t\t";
     while (!isEmpty(&pq))
@@ -285,18 +285,20 @@ int main()
         }
 
         if (pq->id != -1)
-            fprintf(outFile, "\t%d\t\t%d\t\t%d\t\t%d%s\t\t%d\t\t%d%s\n", pq->priority, pq->id, req_time, landingTime, tracker, pq->delayed, kalkis, tracker);
-        printf("[%d]priority: %d ", i, pq->priority);
-        printf("id: %d ", pq->id);
-        printf("l_t: %d ", landingTime);
-        printf(" delay: %d \n", pq->delayed);
+        {
+            fprintf(outFile, "%d\t\t\t %d\t\t\t %d\t\t\t %d%s\t\t %d\t\t\t\t %d%s\n", pq->priority, pq->id, req_time, landingTime, tracker, pq->delayed, kalkis, tracker);
+            printf("[%d]priority: %d ", i, pq->priority);
+            printf("id: %d ", pq->id);
+            printf("landingTime: %d ", landingTime);
+            printf(" delay: %d \n", pq->delayed);
+        }
         pop(&pq);
         i++;
     }
-    printf("\n\n\t\t-----Sabiha-----\n");
+    printf("\n\n\t\t-----Sabiha Gokcen'e Yonlendirilenler-----\n");
     for (int i = 0; i < count; i++)
     {
-        printf("[%d]Ucak id: %d Sabihaya yonlendirildi\n", i + 1, sabiha[i]);
+        printf("[%d]Ucak id: %d Sabiha Gokcen'e yonlendirildi\n", i + 1, sabiha[i]);
     }
     fclose(fp);
     fclose(outFile);
